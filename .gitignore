@@ -1,0 +1,16 @@
+.env
+**/.env
+__pycache__/
+**/__pycache__/
+*.pyc
+*.db
+database/
+uploads/
+processed_images/
+reports/
+.venv/
+venv/
+**/.venv/
+**/venv/
+.vscode/
+dataset/
