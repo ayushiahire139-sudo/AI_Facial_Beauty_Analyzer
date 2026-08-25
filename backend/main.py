@@ -14,6 +14,7 @@ from face_shape import detect_face_shape
 from beauty_score import calculate_beauty_score
 from fastapi import FastAPI, Depends, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 import shutil
 import os
@@ -33,6 +34,18 @@ from symmetry import calculate_symmetry
 # --------------------------------------------------
 models.Base.metadata.create_all(bind=engine)
 
+# Resolve paths
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_DIR = os.path.dirname(BASE_DIR)
+uploads_dir = os.path.join(PROJECT_DIR, "uploads")
+processed_dir = os.path.join(PROJECT_DIR, "processed_images")
+reports_dir = os.path.join(PROJECT_DIR, "reports")
+
+# Ensure directories exist
+os.makedirs(uploads_dir, exist_ok=True)
+os.makedirs(processed_dir, exist_ok=True)
+os.makedirs(reports_dir, exist_ok=True)
+
 # --------------------------------------------------
 # FastAPI App
 # --------------------------------------------------
@@ -47,6 +60,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
+app.mount("/processed_images", StaticFiles(directory=processed_dir), name="processed_images")
+app.mount("/reports", StaticFiles(directory=reports_dir), name="reports")
 
 # --------------------------------------------------
 # Home API
@@ -125,20 +142,15 @@ def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
     }
 
 
+import time
+
 # --------------------------------------------------
 # Upload Image API
 # --------------------------------------------------
 @app.post("/upload-image")
 def upload_image(file: UploadFile = File(...), db: Session = Depends(get_db)):
 
-    upload_folder = os.path.join(
-        os.path.dirname(os.path.dirname(__file__)),
-        "uploads"
-    )
-
-    os.makedirs(upload_folder, exist_ok=True)
-
-    file_path = os.path.join(upload_folder, file.filename)
+    file_path = os.path.join(uploads_dir, file.filename)
 
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
@@ -157,7 +169,7 @@ def upload_image(file: UploadFile = File(...), db: Session = Depends(get_db)):
         "message": "Image Uploaded Successfully",
         "image_id": new_image.id,
         "filename": new_image.filename,
-        "filepath": new_image.filepath
+        "filepath": f"uploads/{file.filename}"
     }
 
 
@@ -167,26 +179,13 @@ def upload_image(file: UploadFile = File(...), db: Session = Depends(get_db)):
 @app.post("/detect-face")
 def detect_face_api(file: UploadFile = File(...)):
 
-    upload_folder = os.path.join(
-        os.path.dirname(os.path.dirname(__file__)),
-        "uploads"
-    )
-
-    processed_folder = os.path.join(
-        os.path.dirname(os.path.dirname(__file__)),
-        "processed_images"
-    )
-
-    os.makedirs(upload_folder, exist_ok=True)
-    os.makedirs(processed_folder, exist_ok=True)
-
-    input_path = os.path.join(upload_folder, file.filename)
+    input_path = os.path.join(uploads_dir, file.filename)
 
     with open(input_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
     output_path = os.path.join(
-        processed_folder,
+        processed_dir,
         "face_" + file.filename
     )
 
@@ -195,38 +194,24 @@ def detect_face_api(file: UploadFile = File(...)):
     return {
         "success": True,
         "message": "Face Detection Completed Successfully",
-        "processed_image": output_path
+        "processed_image": f"processed_images/face_{file.filename}"
     }
+
 # --------------------------------------------------
 # Face Landmark API
 # --------------------------------------------------
 @app.post("/detect-landmarks")
 def detect_landmarks_api(file: UploadFile = File(...)):
 
-    # Upload folder
-    upload_folder = os.path.join(
-        os.path.dirname(os.path.dirname(__file__)),
-        "uploads"
-    )
-
-    # Processed images folder
-    processed_folder = os.path.join(
-        os.path.dirname(os.path.dirname(__file__)),
-        "processed_images"
-    )
-
-    os.makedirs(upload_folder, exist_ok=True)
-    os.makedirs(processed_folder, exist_ok=True)
-
     # Save uploaded image
-    input_path = os.path.join(upload_folder, file.filename)
+    input_path = os.path.join(uploads_dir, file.filename)
 
     with open(input_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
     # Output image
     output_path = os.path.join(
-        processed_folder,
+        processed_dir,
         "landmarks_" + file.filename
     )
 
@@ -240,7 +225,7 @@ def detect_landmarks_api(file: UploadFile = File(...)):
     # Face Analysis
     # ----------------------------
     symmetry_score = calculate_symmetry(landmarks)
-    beauty_score = calculate_beauty_score(symmetry_score)
+    beauty_score = calculate_beauty_score(landmarks, symmetry_score)
     face_shape = detect_face_shape(landmarks)
     golden_ratio_score = calculate_golden_ratio(landmarks)
 
@@ -296,9 +281,14 @@ def detect_landmarks_api(file: UploadFile = File(...)):
     # ----------------------------
     # Generate PDF Report
     # ----------------------------
-    pdf_path = generate_pdf_report(
+    # Use unique name with timestamp to avoid caching/collision issues
+    timestamp = int(time.time())
+    base_name = os.path.splitext(file.filename)[0]
+    pdf_filename = f"beauty_report_{base_name}_{timestamp}.pdf"
+    
+    generate_pdf_report(
         beauty_report,
-        "beauty_report.pdf"
+        pdf_filename
     )
 
     # ----------------------------
@@ -308,7 +298,7 @@ def detect_landmarks_api(file: UploadFile = File(...)):
         "success": True,
         "message": "Face Analysis Completed Successfully",
 
-        "processed_image": processed_image,
+        "processed_image": f"processed_images/landmarks_{file.filename}",
 
         "symmetry_score": symmetry_score,
         "beauty_score": beauty_score,
@@ -328,5 +318,5 @@ def detect_landmarks_api(file: UploadFile = File(...)):
 
         "beauty_report": beauty_report,
 
-        "pdf_report": pdf_path
+        "pdf_report": f"reports/{pdf_filename}"
     }

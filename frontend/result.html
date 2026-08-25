@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Results - AI Facial Beauty Analyzer</title>
+    <link rel="stylesheet" href="CSS/style.css">
+    <script src="JS/theme.js"></script>
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="logo">
+            ✨ AI Beauty Analyzer
+        </div>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="home.html">Analyze</a></li>
+            <li><a href="#" class="active">Results</a></li>
+            <li><a href="#" onclick="logoutUser()">Logout</a></li>
+            <li>
+                <div class="theme-switch-container">
+                    <span>Style:</span>
+                    <select id="themeSelector" class="theme-dropdown">
+                        <option value="theme-glass">Hologram Glass</option>
+                        <option value="theme-cyberpunk">Cyberpunk Glow</option>
+                        <option value="theme-orchid">Luxury Orchid</option>
+                        <option value="theme-emerald">Emerald Serene</option>
+                    </select>
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Results Container -->
+    <main class="results-page">
+        
+        <header class="results-header">
+            <h1>Analysis Report</h1>
+            <p>Artificial Intelligence facial proportions and harmony insights</p>
+        </header>
+
+        <div class="results-grid">
+
+            <!-- Column 1: Before/After Comparison Slider -->
+            <div class="comparison-card">
+                <h2>Visual Alignment</h2>
+                <div class="image-slider-container" id="sliderContainer">
+                    <!-- Original Photo -->
+                    <img id="originalImage" class="slider-img img-before" src="" alt="Original Photo">
+                    
+                    <!-- Landmark Overlay (After) -->
+                    <img id="resultImage" class="slider-img img-after" src="" alt="Analyzed Landmarks">
+                    
+                    <!-- Interactive Slide Bar -->
+                    <div class="slider-handle" id="sliderHandle">
+                        <div class="slider-button">↔</div>
+                    </div>
+                    
+                    <span class="img-label label-left">Original</span>
+                    <span class="img-label label-right">Landmarks</span>
+                </div>
+            </div>
+
+            <!-- Column 2: Score Ring & Personal Badges -->
+            <div class="info-column">
+                
+                <!-- Circular Beauty Score Card -->
+                <div class="score-card">
+                    <div class="radial-progress">
+                        <svg>
+                            <circle class="bg" cx="70" cy="70" r="65"></circle>
+                            <circle class="progress" cx="70" cy="70" r="65" id="scoreCircle"></circle>
+                        </svg>
+                        <div class="score-text" id="beautyScore">--</div>
+                    </div>
+                    <div class="score-details">
+                        <h2>Overall Score</h2>
+                        <p>Based on symmetry, eye-to-face ratios, and Golden Proportion alignment.</p>
+                    </div>
+                </div>
+
+                <!-- Attributes Badges -->
+                <div class="basic-info-grid">
+                    <div class="info-badge">
+                        <span class="label">Face Shape</span>
+                        <span class="value" id="faceShape">--</span>
+                    </div>
+                    <div class="info-badge">
+                        <span class="label">Skin Tone</span>
+                        <span class="value" id="skinTone">--</span>
+                    </div>
+                    <div class="info-badge">
+                        <span class="label">Est. Age</span>
+                        <span class="value" id="estimatedAge">--</span>
+                    </div>
+                    <div class="info-badge">
+                        <span class="label">Gender</span>
+                        <span class="value" id="gender">--</span>
+                    </div>
+                    <div class="info-badge">
+                        <span class="label">Emotion</span>
+                        <span class="value" id="emotion">--</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Section: Landmark Proportions Table -->
+        <section class="results-section">
+            <h2>Facial Proportions Table</h2>
+            <table class="features-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Measurement Analysis</th>
+                        <th>Alignment Quality</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="feature-title">👁 Eyes</td>
+                        <td id="eyeDistance">--</td>
+                        <td id="eyeSymmetry">--</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-title">👃 Nose</td>
+                        <td id="noseWidth">--</td>
+                        <td id="noseLength">--</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-title">👄 Lips</td>
+                        <td id="lipWidth">--</td>
+                        <td id="lipHeight">--</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-title">📐 Jaw / Face Contour</td>
+                        <td id="jawWidth">--</td>
+                        <td id="jawShape">--</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-title">💫 Global Symmetry</td>
+                        <td id="symmetryScore">--</td>
+                        <td id="symmetryRating">--</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-title">📐 Golden Ratio</td>
+                        <td id="goldenRatio">--</td>
+                        <td id="goldenRatioRating">--</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Section: AI Personalized Skincare & Lifestyle Recommendations -->
+        <section class="results-section">
+            <h2>Personalized Recommendations</h2>
+            <div class="rec-grid">
+                
+                <div class="rec-card">
+                    <div class="rec-card-icon">🧼</div>
+                    <div class="rec-card-content">
+                        <h3>Skincare &amp; Hydration</h3>
+                        <p id="recSkincare">Loading your skincare recommendation...</p>
+                    </div>
+                </div>
+
+                <div class="rec-card">
+                    <div class="rec-card-icon">✂️</div>
+                    <div class="rec-card-content">
+                        <h3>Hairstyle &amp; Grooming</h3>
+                        <p id="recHairstyle">Loading your hairstyle suggestions...</p>
+                    </div>
+                </div>
+
+                <div class="rec-card">
+                    <div class="rec-card-icon">💄</div>
+                    <div class="rec-card-content">
+                        <h3>Makeup &amp; Highlights</h3>
+                        <p id="recMakeup">Loading cosmetics recommendation...</p>
+                    </div>
+                </div>
+
+                <div class="rec-card">
+                    <div class="rec-card-icon">🌱</div>
+                    <div class="rec-card-content">
+                        <h3>Lifestyle &amp; Diet</h3>
+                        <p id="recLifestyle">Loading wellness tips...</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Results Actions -->
+        <div class="results-actions">
+            <button id="downloadPdf" class="btn btn-primary" style="padding: 1rem 2rem;">
+                📥 Download PDF Report
+            </button>
+            <button onclick="goHome()" class="btn btn-secondary" style="padding: 1rem 2rem;">
+                🔄 Analyze Another Image
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2026 AI Facial Beauty Analyzer. All rights reserved.</p>
+    </footer>
+
+    <script src="JS/result.js?v=1.1"></script>
+</body>
+
+</html>

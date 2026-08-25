@@ -23,6 +23,9 @@ async function loginUser() {
 
     if (data.success) {
         alert("Login Successful!");
+        localStorage.setItem("user_id", data.user_id);
+        localStorage.setItem("fullname", data.fullname);
+        localStorage.setItem("email", data.email);
         window.location.href = "home.html";
     } else {
         alert(data.message);

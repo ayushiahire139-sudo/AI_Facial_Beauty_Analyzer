@@ -1,44 +1,71 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <title>Login</title>
-    <link rel="stylesheet" href="css/login.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AI Facial Beauty Analyzer</title>
+    <link rel="stylesheet" href="CSS/style.css">
+    <script src="JS/theme.js"></script>
 </head>
 
 <body>
 
-<div class="container">
+    <!-- Navigation -->
+    <nav>
+        <div class="logo">
+            ✨ AI Beauty Analyzer
+        </div>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="register.html">Register</a></li>
+            <li><a href="login.html" class="active">Login</a></li>
+            <li>
+                <div class="theme-switch-container">
+                    <span>Style:</span>
+                    <select id="themeSelector" class="theme-dropdown">
+                        <option value="theme-glass">Hologram Glass</option>
+                        <option value="theme-cyberpunk">Cyberpunk Glow</option>
+                        <option value="theme-orchid">Luxury Orchid</option>
+                        <option value="theme-emerald">Emerald Serene</option>
+                    </select>
+                </div>
+            </li>
+        </ul>
+    </nav>
 
-    <h2>AI Facial Beauty Analyzer</h2>
+    <!-- Login Layout -->
+    <div class="auth-container">
+        <div class="auth-card">
+            <h2>Welcome Back</h2>
+            <h3>Login to analyze your beauty metrics</h3>
 
-    <h3>Login</h3>
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" class="form-input" placeholder="name@example.com" required>
+            </div>
 
-    <input
-        type="email"
-        id="email"
-        placeholder="Enter Email">
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+            </div>
 
-    <br><br>
+            <button onclick="loginUser()" class="auth-button">
+                Log In
+            </button>
 
-    <input
-        type="password"
-        id="password"
-        placeholder="Enter Password">
+            <div class="auth-footer">
+                Don't have an account? <a href="register.html">Register</a>
+            </div>
+        </div>
+    </div>
 
-    <br><br>
+    <!-- Footer -->
+    <footer>
+        <p>© 2026 AI Facial Beauty Analyzer. All rights reserved.</p>
+    </footer>
 
-    <button onclick="loginUser()">
-        Login
-    </button>
-
-    <p>
-        Don't have an account?
-        <a href="register.html">Register</a>
-    </p>
-
-</div>
-
-<script src="js/login.js"></script>
-
+    <script src="JS/login.js?v=1.1"></script>
 </body>
+
 </html>

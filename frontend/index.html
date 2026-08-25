@@ -4,10 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>AI Facial Beauty Analyzer</title>
-
+    <title>AI Facial Beauty Analyzer - Discover Your Golden Ratio & Symmetry</title>
+    <meta name="description" content="Analyze your face shape, facial symmetry, golden ratio, skin tone, estimated age, gender, and emotion using advanced AI. Receive personalized beauty and skincare recommendations.">
     <link rel="stylesheet" href="CSS/style.css">
+    <!-- Load theme.js early to prevent unstyled content flashing -->
+    <script src="JS/theme.js"></script>
 </head>
 
 <body>
@@ -15,119 +16,90 @@
     <!-- =========================
          Navigation Bar
     ========================== -->
-
     <nav>
-
         <div class="logo">
-            AI Facial Beauty Analyzer
+            ✨ AI Beauty Analyzer
         </div>
-
         <ul>
-
+            <li><a href="index.html" class="active">Home</a></li>
+            <li><a href="register.html">Register</a></li>
+            <li><a href="login.html">Login</a></li>
             <li>
-                <a href="index.html">Home</a>
+                <div class="theme-switch-container">
+                    <span>Style:</span>
+                    <select id="themeSelector" class="theme-dropdown">
+                        <option value="theme-glass">Hologram Glass</option>
+                        <option value="theme-cyberpunk">Cyberpunk Glow</option>
+                        <option value="theme-orchid">Luxury Orchid</option>
+                        <option value="theme-emerald">Emerald Serene</option>
+                    </select>
+                </div>
             </li>
-
-            <li>
-                <a href="register.html">Register</a>
-            </li>
-
-            <li>
-                <a href="login.html">Login</a>
-            </li>
-
         </ul>
-
     </nav>
 
 
     <!-- =========================
           Hero Section
     ========================== -->
-
     <section class="hero">
-
         <div class="hero-content">
-
-            <h1>
-                AI Facial Beauty Analyzer
-            </h1>
-
+            <h1>AI Facial Beauty Analyzer</h1>
             <p>
-
-                Analyze facial symmetry, face shape,
-                golden ratio, skin tone, age, gender,
-                emotion and receive personalized
-                beauty recommendations using Artificial Intelligence.
-
+                Analyze facial symmetry, face shape, golden ratio, skin tone, estimated age, and emotion. Receive personalized grooming, skincare, hairstyle, and lifestyle recommendations using advanced Artificial Intelligence.
             </p>
-
             <div class="buttons">
-
-                <a href="register.html" class="btn">
-                    Register
+                <a href="register.html" class="btn btn-primary">
+                    Get Started Free
                 </a>
-
-                <a href="login.html" class="btn btn2">
-                    Login
+                <a href="login.html" class="btn btn-secondary">
+                    Log In
                 </a>
-
             </div>
-
         </div>
-
     </section>
 
 
     <!-- =========================
           Features
     ========================== -->
-
     <section class="features">
+        <h2>Key Analysis Features</h2>
+        <div class="cards-grid">
 
-        <h2>
-            Features
-        </h2>
-
-        <div class="cards">
-
-            <div class="card">
+            <div class="custom-card">
+                <div class="card-icon">🔍</div>
                 <h3>Face Detection</h3>
-                <p>Detect face and facial landmarks accurately.</p>
+                <p>Detect faces and accurately identify 468+ facial landmark points in real-time.</p>
             </div>
 
-            <div class="card">
-                <h3>Beauty Analysis</h3>
-                <p>Calculate beauty score, symmetry and golden ratio.</p>
+            <div class="custom-card">
+                <div class="card-icon">📐</div>
+                <h3>Symmetry &amp; Golden Ratio</h3>
+                <p>Measure horizontal and vertical symmetry alignment and compare proportions to the golden ratio.</p>
             </div>
 
-            <div class="card">
+            <div class="custom-card">
+                <div class="card-icon">💡</div>
                 <h3>AI Recommendations</h3>
-                <p>Receive skincare, hairstyle and lifestyle suggestions.</p>
+                <p>Get custom skincare, hairstyle, makeup styles, and wellness tips tailored to your specific face shape.</p>
             </div>
 
-            <div class="card">
-                <h3>PDF Report</h3>
-                <p>Download a complete facial beauty analysis report.</p>
+            <div class="custom-card">
+                <div class="card-icon">📄</div>
+                <h3>Interactive PDF Report</h3>
+                <p>Download a comprehensive facial analysis report containing detailed score breakdowns and recommendations.</p>
             </div>
 
         </div>
-
     </section>
 
 
     <!-- =========================
           Footer
     ========================== -->
-
     <footer>
-
-        <p>
-
-            © 2026 AI Facial Beauty Analyzer
-
-        </p>
-
+        <p>© 2026 AI Facial Beauty Analyzer. All rights reserved.</p>
     </footer>
 
 </body>
