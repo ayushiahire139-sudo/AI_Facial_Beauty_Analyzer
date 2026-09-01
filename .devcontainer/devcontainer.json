@@ -1,7 +1,7 @@
 {
   "name": "AI Facial Beauty Analyzer",
   "image": "mcr.microsoft.com/devcontainers/python:3.11",
-  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y libgl1 libglib2.0-0 && pip install -r requirements.txt",
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y libgl1 libegl1 libglib2.0-0 && pip install -r requirements.txt",
   "forwardPorts": [8000],
   "portsAttributes": {
     "8000": {
