@@ -1,11 +1,31 @@
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image as RLImage, KeepTogether
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
+from PIL import Image as PILImage
 import os
 from datetime import datetime
 
-def generate_pdf_report(report_data, filename):
+def get_scaled_reportlab_image(image_path, max_width=215, max_height=175):
+    """
+    Safely loads and proportionally scales an image for ReportLab PDF embedding.
+    """
+    if not image_path or not os.path.exists(image_path):
+        return None
+    try:
+        with PILImage.open(image_path) as img:
+            w, h = img.size
+            if w <= 0 or h <= 0:
+                return None
+            ratio = min(max_width / float(w), max_height / float(h))
+            new_w = w * ratio
+            new_h = h * ratio
+            return RLImage(image_path, width=new_w, height=new_h)
+    except Exception as e:
+        print(f"Error loading image '{image_path}' for PDF report: {e}")
+        return None
+
+def generate_pdf_report(report_data, filename, original_image_path=None, landmarks_image_path=None):
     reports_folder = os.path.join(
         os.path.dirname(os.path.dirname(__file__)),
         "reports"
@@ -53,18 +73,18 @@ def generate_pdf_report(report_data, filename):
         'SectionHeading',
         parent=styles['Heading2'],
         fontName='Helvetica-Bold',
-        fontSize=14,
-        leading=18,
+        fontSize=13,
+        leading=17,
         textColor=c_primary,
-        spaceAfter=10,
+        spaceAfter=8,
         keepWithNext=True
     )
     style_body = ParagraphStyle(
         'BodyDark',
         parent=styles['BodyText'],
         fontName='Helvetica',
-        fontSize=9.5,
-        leading=14,
+        fontSize=9,
+        leading=13,
         textColor=c_dark
     )
     style_body_bold = ParagraphStyle(
@@ -91,7 +111,7 @@ def generate_pdf_report(report_data, filename):
         'MetricTitle',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=10,
+        fontSize=9.5,
         textColor=c_secondary,
         alignment=1 # Center
     )
@@ -99,8 +119,17 @@ def generate_pdf_report(report_data, filename):
         'MetricValue',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=22,
-        leading=26,
+        fontSize=20,
+        leading=24,
+        textColor=c_primary,
+        alignment=1 # Center
+    )
+    style_img_caption = ParagraphStyle(
+        'ImgCaption',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=8.5,
+        leading=11,
         textColor=c_primary,
         alignment=1 # Center
     )
@@ -108,7 +137,7 @@ def generate_pdf_report(report_data, filename):
     story = []
 
     # ==========================================
-    # HEADER BAND
+    # 1. HEADER BAND
     # ==========================================
     title_text = "<b>AI FACIAL ANALYSIS REPORT</b>"
     date_str = datetime.now().strftime("%B %d, %Y - %I:%M %p")
@@ -121,15 +150,15 @@ def generate_pdf_report(report_data, filename):
     header_table = Table(header_data, colWidths=[504])
     header_table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), c_primary),
-        ('PADDING', (0,0), (-1,-1), 16),
-        ('BOTTOMPADDING', (0,1), (-1,1), 16),
-        ('TOPPADDING', (0,0), (-1,0), 16),
+        ('PADDING', (0,0), (-1,-1), 14),
+        ('BOTTOMPADDING', (0,1), (-1,1), 14),
+        ('TOPPADDING', (0,0), (-1,0), 14),
     ]))
     story.append(header_table)
-    story.append(Spacer(1, 15))
+    story.append(Spacer(1, 12))
 
     # ==========================================
-    # OVERALL STATS SECTION (Grid Cards Layout)
+    # 2. OVERALL STATS SECTION (Grid Cards Layout)
     # ==========================================
     metrics_data = [
         [
@@ -152,16 +181,55 @@ def generate_pdf_report(report_data, filename):
         ('INNERGRID', (0,0), (-1,-1), 0.5, c_secondary),
         ('ALIGN', (0,0), (-1,-1), 'CENTER'),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('TOPPADDING', (0,0), (-1,0), 12),
-        ('BOTTOMPADDING', (0,0), (-1,0), 4),
-        ('TOPPADDING', (0,1), (-1,1), 4),
-        ('BOTTOMPADDING', (0,1), (-1,1), 12),
+        ('TOPPADDING', (0,0), (-1,0), 10),
+        ('BOTTOMPADDING', (0,0), (-1,0), 3),
+        ('TOPPADDING', (0,1), (-1,1), 3),
+        ('BOTTOMPADDING', (0,1), (-1,1), 10),
     ]))
     story.append(metrics_table)
-    story.append(Spacer(1, 20))
+    story.append(Spacer(1, 14))
 
     # ==========================================
-    # PROFILE SUMMARY BLOCK
+    # 3. VISUAL FACE MAPPING & LANDMARK ALIGNMENT
+    # ==========================================
+    orig_path = original_image_path or report_data.get("original_image_path")
+    mesh_path = landmarks_image_path or report_data.get("landmarks_image_path")
+
+    orig_rl_img = get_scaled_reportlab_image(orig_path, max_width=215, max_height=170)
+    mesh_rl_img = get_scaled_reportlab_image(mesh_path, max_width=215, max_height=170)
+
+    if orig_rl_img or mesh_rl_img:
+        story.append(Paragraph("Visual Face Mapping &amp; Landmark Alignment", style_heading))
+        
+        col1 = [
+            Paragraph("ORIGINAL PORTRAIT", style_img_caption),
+            Spacer(1, 5),
+            orig_rl_img if orig_rl_img else Paragraph("Image Not Available", style_body)
+        ]
+        
+        col2 = [
+            Paragraph("3D LANDMARK MESH (468 POINTS)", style_img_caption),
+            Spacer(1, 5),
+            mesh_rl_img if mesh_rl_img else Paragraph("Landmarks Not Available", style_body)
+        ]
+
+        mapping_table = Table([[col1, col2]], colWidths=[246, 246])
+        mapping_table.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,-1), c_light),
+            ('BOX', (0,0), (-1,-1), 1, c_secondary),
+            ('INNERGRID', (0,0), (-1,-1), 0.5, c_border),
+            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ('TOPPADDING', (0,0), (-1,-1), 8),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 8),
+            ('LEFTPADDING', (0,0), (-1,-1), 8),
+            ('RIGHTPADDING', (0,0), (-1,-1), 8),
+        ]))
+        story.append(mapping_table)
+        story.append(Spacer(1, 14))
+
+    # ==========================================
+    # 4. PROFILE SUMMARY BLOCK
     # ==========================================
     summary_data = [
         [Paragraph("<b>ESTIMATED AGE:</b>", style_body), Paragraph(str(report_data['estimated_age']), style_body),
@@ -172,15 +240,15 @@ def generate_pdf_report(report_data, filename):
     summary_table = Table(summary_data, colWidths=[110, 142, 90, 162])
     summary_table.setStyle(TableStyle([
         ('LINEBELOW', (0,0), (-1,-1), 0.5, c_border),
-        ('PADDING', (0,0), (-1,-1), 6),
-        ('TOPPADDING', (0,0), (-1,-1), 8),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 8),
+        ('PADDING', (0,0), (-1,-1), 5),
+        ('TOPPADDING', (0,0), (-1,-1), 6),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
     ]))
     story.append(summary_table)
-    story.append(Spacer(1, 25))
+    story.append(Spacer(1, 16))
 
     # ==========================================
-    # DETAILED FEATURE RATIOS TABLE
+    # 5. DETAILED FEATURE RATIOS TABLE
     # ==========================================
     story.append(Paragraph("Facial Feature Metric Analysis", style_heading))
     
@@ -223,16 +291,16 @@ def generate_pdf_report(report_data, filename):
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, c_light]),
         ('GRID', (0,0), (-1,-1), 0.5, c_border),
-        ('TOPPADDING', (0,0), (-1,-1), 8),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 8),
-        ('LEFTPADDING', (0,0), (-1,-1), 10),
-        ('RIGHTPADDING', (0,0), (-1,-1), 10),
+        ('TOPPADDING', (0,0), (-1,-1), 6),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+        ('LEFTPADDING', (0,0), (-1,-1), 8),
+        ('RIGHTPADDING', (0,0), (-1,-1), 8),
     ]))
     story.append(ratios_table)
-    story.append(Spacer(1, 25))
+    story.append(Spacer(1, 16))
 
     # ==========================================
-    # PERSONALIZED AI RECOMMENDATIONS
+    # 6. PERSONALIZED AI RECOMMENDATIONS
     # ==========================================
     story.append(Paragraph("AI Recommendations & Guidelines", style_heading))
     
@@ -246,13 +314,13 @@ def generate_pdf_report(report_data, filename):
     rec_data = [
         [Paragraph("<b>🧴 Skincare &amp; Protection:</b>", style_body_bold)],
         [Paragraph(rec_skincare, style_body)],
-        [Spacer(1, 6)],
+        [Spacer(1, 4)],
         [Paragraph("<b>💇 Hairstyle &amp; Profile:</b>", style_body_bold)],
         [Paragraph(rec_hair, style_body)],
-        [Spacer(1, 6)],
+        [Spacer(1, 4)],
         [Paragraph("<b>💄 Cosmetics &amp; Accentuation:</b>", style_body_bold)],
         [Paragraph(rec_makeup, style_body)],
-        [Spacer(1, 6)],
+        [Spacer(1, 4)],
         [Paragraph("<b>🥗 Wellness &amp; Lifestyle:</b>", style_body_bold)],
         [Paragraph(rec_lifestyle, style_body)]
     ]
@@ -260,16 +328,16 @@ def generate_pdf_report(report_data, filename):
     rec_table = Table(rec_data, colWidths=[504])
     rec_table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), c_light),
-        ('PADDING', (0,0), (-1,-1), 12),
+        ('PADDING', (0,0), (-1,-1), 10),
         ('TOPPADDING', (0,0), (-1,-1), 4),
         ('BOTTOMPADDING', (0,0), (-1,-1), 4),
         ('BOX', (0,0), (-1,-1), 1, c_secondary),
     ]))
     story.append(rec_table)
-    story.append(Spacer(1, 25))
+    story.append(Spacer(1, 16))
 
     # ==========================================
-    # DISCLAIMER FOOTER
+    # 7. DISCLAIMER FOOTER
     # ==========================================
     disclaimer_style = ParagraphStyle(
         'DisclaimerText',

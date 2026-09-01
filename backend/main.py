@@ -288,7 +288,9 @@ def detect_landmarks_api(file: UploadFile = File(...)):
     
     generate_pdf_report(
         beauty_report,
-        pdf_filename
+        pdf_filename,
+        original_image_path=input_path,
+        landmarks_image_path=output_path
     )
 
     # ----------------------------
