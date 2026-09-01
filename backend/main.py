@@ -13,6 +13,7 @@ from golden_ratio import calculate_golden_ratio
 from face_shape import detect_face_shape
 from beauty_score import calculate_beauty_score
 from fastapi import FastAPI, Depends, UploadFile, File
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
@@ -40,6 +41,9 @@ PROJECT_DIR = os.path.dirname(BASE_DIR)
 uploads_dir = os.path.join(PROJECT_DIR, "uploads")
 processed_dir = os.path.join(PROJECT_DIR, "processed_images")
 reports_dir = os.path.join(PROJECT_DIR, "reports")
+frontend_dir = os.path.join(PROJECT_DIR, "frontend")
+css_dir = os.path.join(frontend_dir, "CSS")
+js_dir = os.path.join(frontend_dir, "JS")
 
 # Ensure directories exist
 os.makedirs(uploads_dir, exist_ok=True)
@@ -55,7 +59,7 @@ app = FastAPI(
 )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],      # Allow all origins (development)
+    allow_origins=["*"],      # Allow all origins (development & sharing)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -65,15 +69,37 @@ app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
 app.mount("/processed_images", StaticFiles(directory=processed_dir), name="processed_images")
 app.mount("/reports", StaticFiles(directory=reports_dir), name="reports")
 
+if os.path.exists(css_dir):
+    app.mount("/CSS", StaticFiles(directory=css_dir), name="css")
+if os.path.exists(js_dir):
+    app.mount("/JS", StaticFiles(directory=js_dir), name="js")
+
 # --------------------------------------------------
-# Home API
+# Frontend & Health Routes
 # --------------------------------------------------
 @app.get("/")
-def home():
+def serve_index():
+    index_file = os.path.join(frontend_dir, "index.html")
+    if os.path.exists(index_file):
+        return FileResponse(index_file)
     return {
         "success": True,
         "message": "AI Facial Beauty Analyzer Backend Running Successfully"
     }
+
+@app.get("/api/health")
+def api_health():
+    return {
+        "success": True,
+        "message": "AI Facial Beauty Analyzer Backend Running Successfully"
+    }
+
+@app.get("/{page_name}.html")
+def serve_html_page(page_name: str):
+    page_path = os.path.join(frontend_dir, f"{page_name}.html")
+    if os.path.exists(page_path):
+        return FileResponse(page_path)
+    return FileResponse(os.path.join(frontend_dir, "index.html"))
 
 
 # --------------------------------------------------

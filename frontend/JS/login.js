@@ -6,7 +6,11 @@ async function loginUser() {
     console.log("Email:", email);
     console.log("Password:", password);
 
-    const response = await fetch("http://127.0.0.1:8000/login", {
+    const BACKEND_URL = (window.location.port === "3000")
+        ? `http://${window.location.hostname}:8000`
+        : window.location.origin;
+
+    const response = await fetch(`${BACKEND_URL}/login`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"

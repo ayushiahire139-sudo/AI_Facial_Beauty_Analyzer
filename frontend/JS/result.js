@@ -2,7 +2,9 @@
 // AI FACIAL BEAUTY ANALYZER - RESULTS JS
 // ==========================================
 
-const BACKEND_URL = "http://127.0.0.1:8000";
+const BACKEND_URL = (window.location.port === "3000")
+    ? `http://${window.location.hostname}:8000`
+    : window.location.origin;
 
 // Auth Check on page load
 document.addEventListener("DOMContentLoaded", () => {

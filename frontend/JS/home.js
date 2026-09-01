@@ -95,8 +95,12 @@ async function analyzeFace() {
     // Show loading spinner
     loadingOverlay.style.display = "flex";
 
+    const BACKEND_URL = (window.location.port === "3000")
+        ? `http://${window.location.hostname}:8000`
+        : window.location.origin;
+
     try {
-        const response = await fetch("http://127.0.0.1:8000/detect-landmarks", {
+        const response = await fetch(`${BACKEND_URL}/detect-landmarks`, {
             method: "POST",
             body: formData
         });

@@ -11,22 +11,20 @@ async function registerUser() {
 
     try {
 
-        const response = await fetch("http://127.0.0.1:8000/register", {
+        const BACKEND_URL = (window.location.port === "3000")
+            ? `http://${window.location.hostname}:8000`
+            : window.location.origin;
 
+        const response = await fetch(`${BACKEND_URL}/register`, {
             method: "POST",
-
             headers: {
                 "Content-Type": "application/json"
             },
-
             body: JSON.stringify({
-
                 fullname: fullname,
                 email: email,
                 password: password
-
             })
-
         });
 
         const data = await response.json();
