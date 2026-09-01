@@ -5,11 +5,13 @@ import os
 
 # Project Root
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DB_DIR = os.path.join(BASE_DIR, 'database')
+os.makedirs(DB_DIR, exist_ok=True)
 
 # SQLite Database
-DATABASE_URL = f"sqlite:///{os.path.join(BASE_DIR, 'database', 'beauty_analyzer.db')}"
+DATABASE_URL = f"sqlite:///{os.path.join(DB_DIR, 'beauty_analyzer.db')}"
 
-print(DATABASE_URL)
+print("Database URL:", DATABASE_URL)
 
 # Engine
 engine = create_engine(
