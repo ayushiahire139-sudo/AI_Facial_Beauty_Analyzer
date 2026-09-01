@@ -1,18 +1,15 @@
 # AI Facial Beauty Analyzer
 
-An AI-powered facial analysis web application that uses computer vision and facial landmark analysis to evaluate facial features, calculate analysis scores, and generate a detailed beauty analysis report.
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/ayushiahire139-sudo/AI_Facial_Beauty_Analyzer)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Online%20Web%20App-7C3AED?style=for-the-badge&logo=fastapi)](https://ai-facial-beauty-analyzer.onrender.com)
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
+[![MediaPipe](https://img.shields.io/badge/MediaPipe-468%20Landmarks-00C4B4?style=for-the-badge)](https://developers.google.com/mediapipe)
 
-The project combines Python, FastAPI, MediaPipe, OpenCV, SQLAlchemy, SQLite, HTML, CSS, and JavaScript to provide an end-to-end facial analysis workflow.
+> 🚀 **Run Directly from GitHub with 1-Click**: Click the **[Open in GitHub Codespaces](https://codespaces.new/ayushiahire139-sudo/AI_Facial_Beauty_Analyzer)** button above. GitHub will automatically launch the cloud environment, install all dependencies, and open the live web app in your browser!
 
-## Overview
-
-AI Facial Beauty Analyzer allows users to upload a facial image through a web interface and receive automated facial analysis.
-
-The system performs face detection, facial landmark detection, facial feature analysis, symmetry and golden-ratio calculations, skin-tone and emotion analysis, beauty-score calculation, and report generation.
-
-This project demonstrates how computer vision, image processing, backend APIs, databases, and frontend technologies can be combined to build a complete AI-powered application.
-
-## Key Features
+An AI-powered facial analysis web application that uses computer vision, deep learning face mesh landmarking (468 3D points), and machine learning regression to evaluate facial symmetry, golden ratio proportions, and generate clinical aesthetic PDF reports.
 
 - Face detection
 - Facial landmark detection
