@@ -394,7 +394,7 @@ if uploaded_file is not None:
             jaw_analysis = analyze_jaw(landmarks)
             
             skin_tone = detect_skin_tone(temp_input_path)
-            estimated_age = estimate_age(landmarks)
+            estimated_age = estimate_age(landmarks, image_path=temp_input_path)
             gender = detect_gender(landmarks)
             emotion = detect_emotion(landmarks)
             

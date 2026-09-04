@@ -261,7 +261,7 @@ def detect_landmarks_api(file: UploadFile = File(...)):
     jaw_analysis = analyze_jaw(landmarks)
 
     skin_tone = detect_skin_tone(input_path)
-    estimated_age = estimate_age(landmarks)
+    estimated_age = estimate_age(landmarks, image_path=input_path)
     gender = detect_gender(landmarks)
     emotion = detect_emotion(landmarks)
 
