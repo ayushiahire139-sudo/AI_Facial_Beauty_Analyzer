@@ -1,8 +1,8 @@
 # AI Facial Beauty Analyzer
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/)
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://ayushiahire139-sudo-ai-facial-beauty-analy-streamlit-app-88gbl4.streamlit.app)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Online%20Web%20App-7C3AED?style=for-the-badge&logo=streamlit)](https://ayushiahire139-sudo-ai-facial-beauty-analy-streamlit-app-88gbl4.streamlit.app)
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/ayushiahire139-sudo/AI_Facial_Beauty_Analyzer)
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Online%20Web%20App-7C3AED?style=for-the-badge&logo=fastapi)](https://ai-facial-beauty-analyzer.onrender.com)
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
 [![MediaPipe](https://img.shields.io/badge/MediaPipe-468%20Landmarks-00C4B4?style=for-the-badge)](https://developers.google.com/mediapipe)
