@@ -268,34 +268,34 @@ st.markdown(f"""
     }}
     
     /* Sleek & Efficient File Uploader Styling */
-    [data-testid="stFileUploader"] {
+    [data-testid="stFileUploader"] {{
         background: {theme['card_bg']} !important;
         border: {theme['card_border']} !important;
         border-radius: 16px !important;
         padding: 1.5rem !important;
         box-shadow: {theme['shadow']} !important;
         backdrop-filter: blur(12px) !important;
-    }
+    }}
     
-    [data-testid="stFileUploader"] section {
+    [data-testid="stFileUploader"] section {{
         background: rgba(15, 23, 42, 0.4) !important;
         border: 2px dashed {theme['primary']} !important;
         border-radius: 12px !important;
         padding: 1.5rem !important;
         transition: all 0.3s ease;
-    }
+    }}
     
-    [data-testid="stFileUploader"] section:hover {
+    [data-testid="stFileUploader"] section:hover {{
         border-color: {theme['accent']} !important;
         transform: translateY(-2px);
-    }
+    }}
     
-    [data-testid="stFileUploader"] small {
+    [data-testid="stFileUploader"] small {{
         color: {theme['text_muted']} !important;
-    }
+    }}
     
     /* Primary Action Buttons */
-    .stButton > button {
+    .stButton > button {{
         background: {theme['primary_gradient']} !important;
         color: white !important;
         font-weight: 700 !important;
@@ -305,12 +305,12 @@ st.markdown(f"""
         border: none !important;
         box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4) !important;
         transition: all 0.3s ease !important;
-    }
+    }}
     
-    .stButton > button:hover {
+    .stButton > button:hover {{
         transform: translateY(-2px) scale(1.01) !important;
         box-shadow: 0 8px 30px rgba(236, 72, 153, 0.5) !important;
-    }
+    }}
 </style>
 """, unsafe_allow_html=True)
 
