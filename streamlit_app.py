@@ -117,10 +117,21 @@ st.markdown(f"""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap');
     
+    /* Completely Hide GitHub Icon, Header Toolbar, and Streamlit Branding */
+    #MainMenu {{visibility: hidden !important; display: none !important;}}
+    header {{visibility: hidden !important; height: 0 !important; display: none !important;}}
+    footer {{visibility: hidden !important; display: none !important;}}
+    .stAppDeployButton {{display: none !important;}}
+    [data-testid="stToolbar"] {{display: none !important; visibility: hidden !important;}}
+    [data-testid="stDecoration"] {{display: none !important; visibility: hidden !important;}}
+    [data-testid="stStatusWidget"] {{display: none !important; visibility: hidden !important;}}
+    [data-testid="stHeader"] {{display: none !important; visibility: hidden !important;}}
+    
     .stApp {{
         background: {theme['body_bg']} !important;
         color: {theme['text_color']} !important;
         font-family: {theme['font']};
+        padding-top: 1rem !important;
     }}
     
     /* Top Navbar */
