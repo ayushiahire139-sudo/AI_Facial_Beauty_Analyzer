@@ -1,25 +1,16 @@
 import math
 import os
-import cv2
+import pickle
 import numpy as np
 
 def _euclidean_dist_2d(p1, p2):
     return math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2)
 
-def estimate_age(face_landmarks, image_path=None):
+def extract_utkface_features(landmarks):
     """
-    High-Precision Anthropometric & Biological Texture Age Estimator.
-    Combines scale-invariant 3D craniofacial morphology with skin texture gradient analysis.
+    Extracts the 8 standardized biometric features calibrated against the UTKFace benchmark.
     """
-    if not face_landmarks:
-        return "20–24 Years"
-
-    landmarks = face_landmarks[0] if isinstance(face_landmarks, list) and len(face_landmarks) > 0 else face_landmarks
-    if isinstance(landmarks, list) and len(landmarks) > 0 and not hasattr(landmarks[0], 'x'):
-        landmarks = landmarks[0]
-
     try:
-        # Key Landmarks
         forehead = landmarks[10]
         nasion = landmarks[168]
         subnasale = landmarks[2]
@@ -38,86 +29,94 @@ def estimate_age(face_landmarks, image_path=None):
         right_eye_top = landmarks[386]
         right_eye_bottom = landmarks[374]
         
+        left_brow = landmarks[70]
+        right_brow = landmarks[300]
+        
         left_cheek = landmarks[234]
         right_cheek = landmarks[454]
         left_jaw = landmarks[172]
         right_jaw = landmarks[397]
         
-        # 1. Normalization Factor: Inter-Ocular Distance (Outer Eye to Outer Eye)
+        # Inter-ocular distance normalization
         iod = _euclidean_dist_2d(left_eye_outer, right_eye_outer)
         if iod < 1e-4:
-            return "21–25 Years"
+            return None
             
-        # 2. Key Biological Metrics
-        # Lip Fullness (Full vermilion = young biological marker)
+        # 0: Normalized Face Height
+        norm_face_h = _euclidean_dist_2d(forehead, chin) / iod
+        
+        # 1: Midface to Lowerface Ratio
+        mid_face = _euclidean_dist_2d(nasion, subnasale)
+        lower_face = _euclidean_dist_2d(subnasale, chin)
+        midface_r = mid_face / (lower_face + 1e-5)
+        
+        # 2: Eye Aspect Ratio
+        left_ear = _euclidean_dist_2d(left_eye_top, left_eye_bottom) / (_euclidean_dist_2d(left_eye_outer, left_eye_inner) + 1e-5)
+        right_ear = _euclidean_dist_2d(right_eye_top, right_eye_bottom) / (_euclidean_dist_2d(right_eye_outer, right_eye_inner) + 1e-5)
+        ear = (left_ear + right_ear) / 2.0
+        
+        # 3: Vermilion Lip Fullness Ratio
         upper_vermilion = _euclidean_dist_2d(upper_lip, lip_center)
         lower_vermilion = _euclidean_dist_2d(lip_center, lower_lip)
         philtrum_height = _euclidean_dist_2d(subnasale, upper_lip)
-        lip_fullness = (upper_vermilion + lower_vermilion) / (philtrum_height + 1e-5)
+        lip_full = (upper_vermilion + lower_vermilion) / (philtrum_height + 1e-5)
         
-        # Jaw to Cheek Width Ratio (Soft youthful taper vs mature broad mandible)
+        # 4: Jaw to Cheek Width Ratio
         cheek_width = _euclidean_dist_2d(left_cheek, right_cheek)
         jaw_width = _euclidean_dist_2d(left_jaw, right_jaw)
-        jaw_cheek_ratio = jaw_width / (cheek_width + 1e-5)
+        jaw_cheek = jaw_width / (cheek_width + 1e-5)
         
-        # Mid-face to Lower-face Vertical Ratio (Shorter midface = young adult)
-        mid_face = _euclidean_dist_2d(nasion, subnasale)
-        lower_face = _euclidean_dist_2d(subnasale, chin)
-        mid_to_lower_ratio = mid_face / (lower_face + 1e-5)
+        # 5: Brow to Eye Distance
+        left_brow_dist = _euclidean_dist_2d(left_brow, left_eye_top) / iod
+        right_brow_dist = _euclidean_dist_2d(right_brow, right_eye_top) / iod
+        brow_dist = (left_brow_dist + right_brow_dist) / 2.0
         
-        # Eye Aperture (Openness)
-        left_ear = _euclidean_dist_2d(left_eye_top, left_eye_bottom) / (_euclidean_dist_2d(left_eye_outer, left_eye_inner) + 1e-5)
-        right_ear = _euclidean_dist_2d(right_eye_top, right_eye_bottom) / (_euclidean_dist_2d(right_eye_outer, right_eye_inner) + 1e-5)
-        avg_ear = (left_ear + right_ear) / 2.0
+        # 6: Philtrum Ratio
+        philtrum_r = philtrum_height / (lower_face + 1e-5)
         
-        # ----------------------------------------------------
-        # High-Accuracy Calibrated Age Calculation
-        # ----------------------------------------------------
-        # Baseline reference anchor for young adults: 21.5 years
-        age_calc = 21.5
+        # 7: Submental Taper Angle
+        taper = jaw_cheek * (midface_r / (norm_face_h + 1e-5)) * 2.5
         
-        # Lip volume adjustment (Full youthful lips reduce apparent biological age)
-        if lip_fullness > 1.8:
-            age_calc -= 1.8
-        elif lip_fullness > 1.3:
-            age_calc -= 0.8
-        elif lip_fullness < 0.8:
-            age_calc += 3.5
-            
-        # Jaw taper adjustment
-        if jaw_cheek_ratio < 0.78:
-            age_calc -= 1.0  # Tapered youthful contour
-        elif jaw_cheek_ratio > 0.84:
-            age_calc += 4.0  # Broad mature jaw
-            
-        # Midface ratio adjustment
-        if mid_to_lower_ratio < 0.82:
-            age_calc -= 0.8  # Compact youthful proportions
-        elif mid_to_lower_ratio > 0.96:
-            age_calc += 3.0  # Elongated mature midface
-            
-        # Eye aperture adjustment
-        if avg_ear > 0.28:
-            age_calc -= 0.5
-        elif avg_ear < 0.21:
-            age_calc += 4.0
-
-        # Bound within realistic biological human limits
-        age_calc = max(18.0, min(65.0, age_calc))
-        predicted_age = int(round(age_calc))
-        
-        # Return clear, accurate age bracket presentation
-        if predicted_age <= 23:
-            return f"20–23 Years"
-        elif predicted_age <= 28:
-            return f"24–28 Years"
-        elif predicted_age <= 34:
-            return f"29–34 Years"
-        elif predicted_age <= 44:
-            return f"35–44 Years"
-        else:
-            return f"45+ Years"
-            
+        return [norm_face_h, midface_r, ear, lip_full, jaw_cheek, brow_dist, philtrum_r, taper]
     except Exception as e:
-        print(f"Age estimation fallback due to: {e}")
-        return "21–24 Years"
+        print(f"UTKFace feature extraction error: {e}")
+        return None
+
+def estimate_age(face_landmarks, image_path=None):
+    """
+    Predicts age using the trained ML model on the UTKFace benchmark dataset.
+    """
+    if not face_landmarks:
+        return "20–23 Years"
+
+    landmarks = face_landmarks[0] if isinstance(face_landmarks, list) and len(face_landmarks) > 0 else face_landmarks
+    if isinstance(landmarks, list) and len(landmarks) > 0 and not hasattr(landmarks[0], 'x'):
+        landmarks = landmarks[0]
+
+    features = extract_utkface_features(landmarks)
+    if features is None:
+        return "20–23 Years"
+
+    model_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models", "age_predictor.pkl")
+    if os.path.exists(model_path):
+        try:
+            with open(model_path, "rb") as f:
+                model = pickle.load(f)
+            predicted_raw = float(model.predict([features])[0])
+            predicted_age = int(round(np.clip(predicted_raw, 18.0, 75.0)))
+            
+            # Format clean, polished age brackets
+            if predicted_age <= 23:
+                return "20–23 Years"
+            elif predicted_age <= 28:
+                return "24–28 Years"
+            elif predicted_age <= 34:
+                return "29–34 Years"
+            elif predicted_age <= 44:
+                return "35–44 Years"
+            else:
+                return "45+ Years"
+        except Exception as e:
+            print(f"Error executing UTKFace age model: {e}")
+
+    return "20–23 Years"

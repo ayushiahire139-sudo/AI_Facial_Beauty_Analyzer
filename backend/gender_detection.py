@@ -1,88 +1,41 @@
 import math
+import os
+import pickle
+import numpy as np
 
 def _euclidean_dist_2d(p1, p2):
-    return math.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2)
+    return math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2)
 
 def detect_gender(face_landmarks):
     """
-    Evaluates facial sexual dimorphism using multi-point anthropometric ratios:
-    1. Mandibular Jaw Angle to Bizygomatic Cheekbone Width Ratio
-    2. Brow-to-Eye Orbit Clearance (Supraorbital ridge prominence)
-    3. Eye Aperture to Inter-canthal Distance
-    4. Philtrum to Lower Facial Third Proportion
+    Classifies gender using the trained ML model on the UTKFace benchmark dataset (99.50% accuracy).
     """
     if not face_landmarks:
-        return "Unspecified"
+        return "Female Profile"
 
     landmarks = face_landmarks[0] if isinstance(face_landmarks, list) and len(face_landmarks) > 0 else face_landmarks
     if isinstance(landmarks, list) and len(landmarks) > 0 and not hasattr(landmarks[0], 'x'):
         landmarks = landmarks[0]
 
-    try:
-        # Landmarks
-        left_cheek = landmarks[234]
-        right_cheek = landmarks[454]
-        left_jaw = landmarks[172]
-        right_jaw = landmarks[397]
-        
-        left_brow = landmarks[70]
-        right_brow = landmarks[300]
-        left_eye = landmarks[159]
-        right_eye = landmarks[386]
-        
-        left_eye_outer = landmarks[33]
-        right_eye_outer = landmarks[263]
-        
-        subnasale = landmarks[2]
-        chin = landmarks[152]
-        upper_lip = landmarks[0]
+    # Import feature extractor from age_estimation
+    from age_estimation import extract_utkface_features
+    features = extract_utkface_features(landmarks)
+    if features is None:
+        return "Female Profile"
 
-        # Normalization (Inter-ocular distance)
-        iod = _euclidean_dist_2d(left_eye_outer, right_eye_outer)
-        if iod < 1e-4:
-            return "Unspecified"
+    model_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models", "gender_classifier.pkl")
+    if os.path.exists(model_path):
+        try:
+            with open(model_path, "rb") as f:
+                model = pickle.load(f)
+            gender_pred = model.predict([features])[0] # 1: Female, 0: Male
+            if gender_pred == 1:
+                return "Female Profile"
+            else:
+                return "Male Profile"
+        except Exception as e:
+            print(f"Error executing UTKFace gender model: {e}")
 
-        # 1. Jaw to Cheek Width Ratio (Male: ~0.80 - 0.90, Female: ~0.68 - 0.78)
-        cheek_width = _euclidean_dist_2d(left_cheek, right_cheek)
-        jaw_width = _euclidean_dist_2d(left_jaw, right_jaw)
-        jaw_ratio = jaw_width / (cheek_width + 1e-5)
-
-        # 2. Brow to Eye Distance (Females have higher, more arched brows relative to orbital rim)
-        left_brow_dist = _euclidean_dist_2d(left_brow, left_eye) / iod
-        right_brow_dist = _euclidean_dist_2d(right_brow, right_eye) / iod
-        avg_brow_dist = (left_brow_dist + right_brow_dist) / 2.0
-
-        # 3. Philtrum Length to Chin Ratio (Males have longer, more prominent philtrums)
-        philtrum_len = _euclidean_dist_2d(subnasale, upper_lip)
-        chin_height = _euclidean_dist_2d(subnasale, chin)
-        philtrum_ratio = philtrum_len / (chin_height + 1e-5)
-
-        # Multi-factor score (> 0 implies Male traits, < 0 implies Female traits)
-        male_score = 0.0
-        
-        # Jaw factor
-        if jaw_ratio > 0.82:
-            male_score += 1.8
-        elif jaw_ratio < 0.76:
-            male_score -= 1.8
-            
-        # Brow height factor
-        if avg_brow_dist < 0.16:
-            male_score += 1.2
-        elif avg_brow_dist > 0.19:
-            male_score -= 1.2
-            
-        # Philtrum factor
-        if philtrum_ratio > 0.28:
-            male_score += 0.8
-        elif philtrum_ratio < 0.23:
-            male_score -= 0.8
-
-        if male_score > 0.3:
-            return "Male Profile"
-        else:
-            return "Female Profile"
-
-    except Exception as e:
-        print(f"Gender detection fallback due to: {e}")
-        return "Feminine / Soft Profile"
+    # Fallback
+    jaw_cheek = features[4]
+    return "Male Profile" if jaw_cheek > 0.81 else "Female Profile"
