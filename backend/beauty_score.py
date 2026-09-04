@@ -74,10 +74,10 @@ def calculate_beauty_score(face_landmarks, symmetry_score):
             with open(model_path, "rb") as f:
                 model_data = pickle.load(f)
                 
-            model = model_data.get("model")
+            model = model_data if hasattr(model_data, "predict") else model_data.get("model")
             features = extract_facial_features(face_landmarks)
             
-            if features is not None:
+            if features is not None and model is not None:
                 X = np.array([features])
                 predicted_score = model.predict(X)[0]
                 predicted_score = max(0, min(100, predicted_score))
