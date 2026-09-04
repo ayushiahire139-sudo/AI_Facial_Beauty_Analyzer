@@ -470,6 +470,126 @@ if uploaded_file is not None:
         st.markdown("<br>", unsafe_allow_html=True)
         
         # ----------------------------------------------------
+        # Score Breakdown & Detailed Findings (Matching Image 1)
+        # ----------------------------------------------------
+        col_sb1, col_sb2 = st.columns([1, 1.3])
+        
+        with col_sb1:
+            st.markdown(f"""
+            <div class="glass-card">
+                <h3 style="color: {theme['primary']}; margin-top:0;">📊 Score Breakdown</h3>
+            """, unsafe_allow_html=True)
+            
+            breakdown_dict = beauty_report.get("score_breakdown", {})
+            for cat_name, cat_score in breakdown_dict.items():
+                st.write(f"**{cat_name}** ({cat_score}/100)")
+                st.progress(cat_score / 100.0)
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+        with col_sb2:
+            st.markdown(f"""
+            <div class="glass-card">
+                <h3 style="color: {theme['primary']}; margin-top:0;">📋 Detailed Findings</h3>
+            """, unsafe_allow_html=True)
+            findings_dict = beauty_report.get("detailed_findings", {})
+            icon_map = {
+                "symmetry": "⚖️", "proportions": "📏", "bone_structure": "👤",
+                "skin_quality": "💧", "eyes": "👁️", "nose": "👃",
+                "lips": "👄", "jawline_chin": "🦴"
+            }
+            for k, f_item in findings_dict.items():
+                icon = icon_map.get(k, "•")
+                title = f_item.get("title", k.capitalize())
+                score = f_item.get("score", 70)
+                text = f_item.get("text", "")
+                st.markdown(f"""
+                <div style="margin-bottom: 0.6rem; padding-bottom: 0.4rem; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                    <div style="display:flex; justify-content:space-between; font-weight:600;">
+                        <span>{icon} {title}</span>
+                        <span style="color:{theme['primary']};">{score} / 100</span>
+                    </div>
+                    <div style="font-size:0.85rem; color:{theme['text_muted']};">{text}</div>
+                </div>
+                """, unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # ----------------------------------------------------
+        # Key Strengths & Areas for Improvement (Matching Image 1)
+        # ----------------------------------------------------
+        col_str, col_imp = st.columns(2)
+        with col_str:
+            st.markdown(f"""
+            <div class="glass-card">
+                <h3 style="color: {theme['primary']}; margin-top:0;">🌟 Key Strengths</h3>
+            """, unsafe_allow_html=True)
+            for s in beauty_report.get("key_strengths", []):
+                st.markdown(f"• **{s}**")
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+        with col_imp:
+            st.markdown(f"""
+            <div class="glass-card">
+                <h3 style="color: {theme['accent']}; margin-top:0;">🎯 Areas for Improvement</h3>
+            """, unsafe_allow_html=True)
+            for imp in beauty_report.get("areas_for_improvement", []):
+                st.markdown(f"• **{imp}**")
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # ----------------------------------------------------
+        # Grooming & Style Recommendations (5 Columns - Matching Image 1)
+        # ----------------------------------------------------
+        st.markdown(f"""
+        <div class="glass-card">
+            <h3 style="color: {theme['primary']}; margin-top: 0;">✨ Grooming & Style Recommendations</h3>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        g1, g2, g3, g4, g5 = st.columns(5)
+        grooming_dict = beauty_report.get("grooming_recommendations", {})
+        
+        with g1:
+            st.markdown(f"""
+            <div class="glass-card" style="min-height: 180px;">
+                <h4 style="color:{theme['primary']}; margin-top:0;">〰️ BROWS</h4>
+                <p style="font-size:0.85rem; color:{theme['text_muted']};">• {grooming_dict.get('brows', [''])[0]}<br><br>• {grooming_dict.get('brows', ['',''])[1]}</p>
+            </div>
+            """, unsafe_allow_html=True)
+        with g2:
+            st.markdown(f"""
+            <div class="glass-card" style="min-height: 180px;">
+                <h4 style="color:{theme['primary']}; margin-top:0;">👁️ EYES</h4>
+                <p style="font-size:0.85rem; color:{theme['text_muted']};">• {grooming_dict.get('eyes', [''])[0]}<br><br>• {grooming_dict.get('eyes', ['',''])[1]}</p>
+            </div>
+            """, unsafe_allow_html=True)
+        with g3:
+            st.markdown(f"""
+            <div class="glass-card" style="min-height: 180px;">
+                <h4 style="color:{theme['primary']}; margin-top:0;">👤 CONTOUR</h4>
+                <p style="font-size:0.85rem; color:{theme['text_muted']};">• {grooming_dict.get('contour_face', [''])[0]}<br><br>• {grooming_dict.get('contour_face', ['',''])[1]}</p>
+            </div>
+            """, unsafe_allow_html=True)
+        with g4:
+            st.markdown(f"""
+            <div class="glass-card" style="min-height: 180px;">
+                <h4 style="color:{theme['primary']}; margin-top:0;">👄 LIPS</h4>
+                <p style="font-size:0.85rem; color:{theme['text_muted']};">• {grooming_dict.get('lips', [''])[0]}<br><br>• {grooming_dict.get('lips', ['',''])[1]}</p>
+            </div>
+            """, unsafe_allow_html=True)
+        with g5:
+            st.markdown(f"""
+            <div class="glass-card" style="min-height: 180px;">
+                <h4 style="color:{theme['primary']}; margin-top:0;">💇 HAIR</h4>
+                <p style="font-size:0.85rem; color:{theme['text_muted']};">• {grooming_dict.get('hair', [''])[0]}<br><br>• {grooming_dict.get('hair', ['',''])[1]}</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # ----------------------------------------------------
         # Visual Landmark Face Mapping (Side-by-Side Comparison)
         # ----------------------------------------------------
         st.markdown(f"""
@@ -490,50 +610,12 @@ if uploaded_file is not None:
         st.markdown("<br>", unsafe_allow_html=True)
         
         # ----------------------------------------------------
-        # Feature Details & Recommendations
-        # ----------------------------------------------------
-        r1, r2 = st.columns(2)
-        with r1:
-            st.markdown(f"""
-            <div class="glass-card">
-                <h3 style="color: {theme['primary']};">📐 Facial Proportions Breakdown</h3>
-                <p><b>👤 Demographic Profile:</b> Gender: {gender} | Skin Tone: {skin_tone} | Emotion: {emotion}</p>
-                <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 1rem 0;">
-                <p><b>👁️ Eyes:</b> Distance: <code>{eye_analysis['eye_distance']}</code> | Symmetry: <code>{eye_analysis['eye_symmetry']}</code></p>
-                <p><b>👃 Nose:</b> Width: <code>{nose_analysis['nose_width']}</code> | Shape: <code>{nose_analysis['nose_shape']}</code></p>
-                <p><b>👄 Lips:</b> Width: <code>{lip_analysis['lip_width']}</code> | Shape: <code>{lip_analysis['lip_shape']}</code></p>
-                <p><b>🦴 Jawline:</b> Width: <code>{jaw_analysis['jaw_width']}</code> | Shape: <code>{jaw_analysis['jaw_shape']}</code></p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-        with r2:
-            st.markdown(f"""
-            <div class="glass-card">
-                <h3 style="color: {theme['primary']};">💡 AI Personalized Beauty & Styling Guidelines</h3>
-                <div class="rec-box">
-                    <b>🧴 Skincare & Hydration:</b><br>{recommendations.get('skincare')}
-                </div>
-                <div class="rec-box">
-                    <b>💇 Hairstyle & Contours:</b><br>{recommendations.get('hairstyle')}
-                </div>
-                <div class="rec-box">
-                    <b>💄 Cosmetics & Accentuation:</b><br>{recommendations.get('makeup')}
-                </div>
-                <div class="rec-box">
-                    <b>🥗 Wellness & Lifestyle:</b><br>{recommendations.get('lifestyle')}
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        # ----------------------------------------------------
-        # Download Clinical PDF Report Button
+        # Download Clinical PDF Report Button (Exact Image 1 Match)
         # ----------------------------------------------------
         st.markdown(f"""
         <div class="glass-card" style="text-align: center;">
-            <h3 style="color: {theme['primary']};">📥 Download Official Aesthetic PDF Report</h3>
-            <p style="color: {theme['text_muted']};">Export your complete analysis with embedded face mapping diagrams, proportions table, and personalized recommendations as a clinical aesthetic PDF.</p>
+            <h3 style="color: {theme['primary']};">📥 Download Official Clinical Facial Beauty Report (PDF)</h3>
+            <p style="color: {theme['text_muted']};">Download your high-resolution clinical aesthetic report featuring the exact editorial score breakdowns, detailed findings, 3D face mesh, and grooming recommendations matching the official standard.</p>
         </div>
         """, unsafe_allow_html=True)
         
@@ -541,7 +623,7 @@ if uploaded_file is not None:
             with open(pdf_path, "rb") as pdf_file:
                 pdf_bytes = pdf_file.read()
                 st.download_button(
-                    label="📄 Download Full Aesthetic Analysis PDF Report",
+                    label="📄 Download Clinical Facial Beauty Report (PDF)",
                     data=pdf_bytes,
                     file_name=pdf_filename,
                     mime="application/pdf",
