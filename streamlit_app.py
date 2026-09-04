@@ -267,9 +267,50 @@ st.markdown(f"""
         color: {theme['text_color']};
     }}
     
-    .rec-box b {{
-        color: {theme['accent']};
-    }}
+    /* Sleek & Efficient File Uploader Styling */
+    [data-testid="stFileUploader"] {
+        background: {theme['card_bg']} !important;
+        border: {theme['card_border']} !important;
+        border-radius: 16px !important;
+        padding: 1.5rem !important;
+        box-shadow: {theme['shadow']} !important;
+        backdrop-filter: blur(12px) !important;
+    }
+    
+    [data-testid="stFileUploader"] section {
+        background: rgba(15, 23, 42, 0.4) !important;
+        border: 2px dashed {theme['primary']} !important;
+        border-radius: 12px !important;
+        padding: 1.5rem !important;
+        transition: all 0.3s ease;
+    }
+    
+    [data-testid="stFileUploader"] section:hover {
+        border-color: {theme['accent']} !important;
+        transform: translateY(-2px);
+    }
+    
+    [data-testid="stFileUploader"] small {
+        color: {theme['text_muted']} !important;
+    }
+    
+    /* Primary Action Buttons */
+    .stButton > button {
+        background: {theme['primary_gradient']} !important;
+        color: white !important;
+        font-weight: 700 !important;
+        font-size: 1.1rem !important;
+        padding: 0.8rem 2rem !important;
+        border-radius: 12px !important;
+        border: none !important;
+        box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4) !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px) scale(1.01) !important;
+        box-shadow: 0 8px 30px rgba(236, 72, 153, 0.5) !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -307,20 +348,14 @@ os.makedirs(TEMP_PROCESSED, exist_ok=True)
 os.makedirs(TEMP_REPORTS, exist_ok=True)
 
 # ----------------------------------------------------
-# Upload Section
+# Upload Section (Clean, Efficient & Integrated)
 # ----------------------------------------------------
-col_upload, col_preview = st.columns([1.2, 1])
-
-with col_upload:
-    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-    st.subheader("📤 Upload Portrait Photo")
-    uploaded_file = st.file_uploader(
-        "Choose a high-resolution front-facing face portrait:",
-        type=["jpg", "jpeg", "png", "webp"],
-        label_visibility="collapsed"
-    )
-    st.caption("Supported formats: JPEG, PNG, WEBP (Smartphone & Camera portraits supported)")
-    st.markdown('</div>', unsafe_allow_html=True)
+st.markdown(f"### 📤 Upload Portrait Photo")
+uploaded_file = st.file_uploader(
+    "Upload a clear front-facing portrait photo (JPG, PNG, WEBP):",
+    type=["jpg", "jpeg", "png", "webp"],
+    help="Smartphone & camera portraits are supported. Auto-rotation and proportion scaling will be applied automatically."
+)
 
 if uploaded_file is not None:
     temp_input_path = os.path.join(TEMP_UPLOADS, f"upload_{uploaded_file.name}")
@@ -329,14 +364,18 @@ if uploaded_file is not None:
         
     temp_output_path = os.path.join(TEMP_PROCESSED, f"landmarks_{uploaded_file.name}")
     
-    with col_preview:
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-        st.subheader("📷 Image Preview")
-        st.image(temp_input_path, use_container_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+    col_img, col_act = st.columns([1, 1.2])
+    with col_img:
+        st.image(temp_input_path, caption="📷 Uploaded Face Preview", use_container_width=True)
         
-    st.markdown("<br>", unsafe_allow_html=True)
-    run_btn = st.button("✨ Begin AI Face Analysis", type="primary", use_container_width=True)
+    with col_act:
+        st.markdown(f"""
+        <div class="glass-card">
+            <h3 style="color: {theme['primary']}; margin-top:0;">Ready for AI Inspection</h3>
+            <p style="color: {theme['text_muted']};">The AI engine will normalize orientation, map 468 facial coordinates, compute symmetry ratios, and generate recommendations.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        run_btn = st.button("✨ Begin AI Face Analysis", type="primary", use_container_width=True)
     
     if run_btn:
         with st.spinner("🔍 Extracting 468 3D landmarks, checking auto-rotation, and computing geometric scores..."):
