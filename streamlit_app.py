@@ -11,6 +11,10 @@ from PIL import Image
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(BASE_DIR, "backend"))
 
+import models
+from database import engine, SessionLocal
+from security import hash_password, verify_password
+
 from landmark_detector import detect_landmarks
 from beauty_score import calculate_beauty_score
 from symmetry import calculate_symmetry
@@ -28,6 +32,9 @@ from beauty_report import generate_beauty_report
 from recommendation_engine import generate_recommendations
 from report_generator import generate_pdf_report
 
+# Ensure SQLite Database Tables Exist
+models.Base.metadata.create_all(bind=engine)
+
 # Page Config
 st.set_page_config(
     page_title="AI Facial Beauty Analyzer",
@@ -35,6 +42,14 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Initialize Session State for Authentication
+if "authenticated" not in st.session_state:
+    st.session_state["authenticated"] = False
+if "user_name" not in st.session_state:
+    st.session_state["user_name"] = ""
+if "user_email" not in st.session_state:
+    st.session_state["user_email"] = ""
 
 # ----------------------------------------------------
 # Theme Styles Configuration
@@ -90,7 +105,7 @@ THEMES = {
     }
 }
 
-# Sidebar Theme Selector
+# Sidebar
 with st.sidebar:
     st.markdown("### 🎨 Visual Theme")
     selected_theme_name = st.selectbox(
@@ -101,12 +116,24 @@ with st.sidebar:
     theme = THEMES[selected_theme_name]
     
     st.divider()
+    if st.session_state["authenticated"]:
+        st.markdown(f"### 👤 Active Account")
+        st.write(f"**Name:** {st.session_state['user_name']}")
+        if st.session_state["user_email"]:
+            st.write(f"**Email:** {st.session_state['user_email']}")
+        if st.button("🚪 Log Out", use_container_width=True):
+            st.session_state["authenticated"] = False
+            st.session_state["user_name"] = ""
+            st.session_state["user_email"] = ""
+            st.rerun()
+        st.divider()
+
     st.markdown("### 🔬 System Engine")
     st.markdown("""
     - **468 3D Dense Mesh Landmarks**
-    - **Random Forest Regressor** Beauty Engine
+    - **UTKFace Ensemble ML Engine**
+    - **Dual-Stream Wrinkle Texture Analyzer**
     - **Golden Ratio & Symmetry Analysis**
-    - **Auto-Rotation & Scale Normalizer**
     - **Clinical Aesthetic PDF Generation**
     """)
     st.divider()
@@ -299,8 +326,8 @@ st.markdown(f"""
         background: {theme['primary_gradient']} !important;
         color: white !important;
         font-weight: 700 !important;
-        font-size: 1.1rem !important;
-        padding: 0.8rem 2rem !important;
+        font-size: 1.05rem !important;
+        padding: 0.75rem 1.8rem !important;
         border-radius: 12px !important;
         border: none !important;
         box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4) !important;
@@ -315,25 +342,131 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ----------------------------------------------------
-# Top Navigation Bar
+# AUTHENTICATION GUARD: LOGIN & REGISTRATION FIRST
+# ----------------------------------------------------
+if not st.session_state["authenticated"]:
+    st.markdown(f"""
+    <div class="custom-nav">
+        <div class="nav-logo">✨ AI Facial Beauty Analyzer</div>
+        <div class="nav-badges">
+            <span class="badge">🔒 User Portal</span>
+            <span class="badge">Theme: {selected_theme_name}</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="hero-box">
+        <h1>Welcome to AI Facial Beauty Analyzer</h1>
+        <p>Sign in or register a free account to unlock deep learning 468-point 3D facial mapping, golden ratio calculations, and clinical aesthetic PDF reports.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    col_center = st.columns([1, 1.8, 1])[1]
+    
+    with col_center:
+        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+        tab_login, tab_register = st.tabs(["🔐 Sign In", "📝 Create New Account (Register)"])
+        
+        # --- TAB 1: SIGN IN ---
+        with tab_login:
+            st.markdown(f"<h3 style='color:{theme['primary']}; margin-top:0;'>Access Your Dashboard</h3>", unsafe_allow_html=True)
+            login_email = st.text_input("Email Address", key="login_email_input", placeholder="name@example.com")
+            login_password = st.text_input("Password", type="password", key="login_password_input", placeholder="Enter your password")
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("Sign In to Analyzer ✨", key="login_btn", use_container_width=True):
+                if not login_email or not login_password:
+                    st.error("Please enter both email and password.")
+                else:
+                    db = SessionLocal()
+                    try:
+                        user = db.query(models.User).filter(models.User.email == login_email.strip().lower()).first()
+                        if user and verify_password(login_password, user.password):
+                            st.session_state["authenticated"] = True
+                            st.session_state["user_name"] = user.fullname
+                            st.session_state["user_email"] = user.email
+                            st.success(f"Welcome back, {user.fullname}!")
+                            time.sleep(0.5)
+                            st.rerun()
+                        else:
+                            st.error("Invalid email or password. Please try again.")
+                    finally:
+                        db.close()
+                        
+            st.divider()
+            st.markdown("<p style='text-align:center; font-size:0.85rem;'>Need instant evaluation?</p>", unsafe_allow_html=True)
+            if st.button("⚡ Quick Guest Access (Demo)", key="guest_btn", use_container_width=True):
+                st.session_state["authenticated"] = True
+                st.session_state["user_name"] = "Guest User"
+                st.session_state["user_email"] = "guest@analyzer.ai"
+                st.rerun()
+
+        # --- TAB 2: REGISTER ---
+        with tab_register:
+            st.markdown(f"<h3 style='color:{theme['accent']}; margin-top:0;'>Register Your Account</h3>", unsafe_allow_html=True)
+            reg_fullname = st.text_input("Full Name", key="reg_fullname_input", placeholder="John Doe / Ayushi Ahire")
+            reg_email = st.text_input("Email Address", key="reg_email_input", placeholder="name@example.com")
+            reg_password = st.text_input("Create Password", type="password", key="reg_password_input", placeholder="At least 6 characters")
+            reg_confirm_password = st.text_input("Confirm Password", type="password", key="reg_confirm_password_input", placeholder="Repeat your password")
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("Register & Get Started 🚀", key="reg_btn", use_container_width=True):
+                if not reg_fullname or not reg_email or not reg_password:
+                    st.error("Please fill in all registration fields.")
+                elif reg_password != reg_confirm_password:
+                    st.error("Passwords do not match. Please re-enter.")
+                elif len(reg_password) < 6:
+                    st.error("Password must be at least 6 characters long.")
+                else:
+                    db = SessionLocal()
+                    try:
+                        existing = db.query(models.User).filter(models.User.email == reg_email.strip().lower()).first()
+                        if existing:
+                            st.error("An account with this email already exists. Please Sign In.")
+                        else:
+                            hashed_pwd = hash_password(reg_password)
+                            new_user = models.User(
+                                fullname=reg_fullname.strip(),
+                                email=reg_email.strip().lower(),
+                                password=hashed_pwd
+                            )
+                            db.add(new_user)
+                            db.commit()
+                            
+                            st.session_state["authenticated"] = True
+                            st.session_state["user_name"] = reg_fullname.strip()
+                            st.session_state["user_email"] = reg_email.strip().lower()
+                            st.success("Account registered successfully! Redirecting...")
+                            time.sleep(0.5)
+                            st.rerun()
+                    except Exception as e:
+                        db.rollback()
+                        st.error(f"Registration error: {e}")
+                    finally:
+                        db.close()
+                        
+        st.markdown('</div>', unsafe_allow_html=True)
+    st.stop()
+
+# ----------------------------------------------------
+# MAIN APPLICATION DASHBOARD (UNLOCKED AFTER LOGIN)
 # ----------------------------------------------------
 st.markdown(f"""
 <div class="custom-nav">
     <div class="nav-logo">✨ AI Facial Beauty Analyzer</div>
     <div class="nav-badges">
+        <span class="badge">👤 {st.session_state['user_name']}</span>
         <span class="badge">468 3D Mesh</span>
-        <span class="badge">ML Beauty Engine</span>
         <span class="badge">Theme: {selected_theme_name}</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# ----------------------------------------------------
 # Hero Section
-# ----------------------------------------------------
-st.markdown("""
+st.markdown(f"""
 <div class="hero-box">
-    <h1>Discover Your Facial Geometry & Proportions</h1>
+    <h1>Welcome, {st.session_state['user_name']}!</h1>
     <p>Upload a front-facing portrait to analyze 3D landmark mesh alignment, calculate golden ratio harmony, evaluate symmetry, and generate clinical aesthetic PDF reports.</p>
 </div>
 """, unsafe_allow_html=True)
@@ -468,7 +601,7 @@ if uploaded_file is not None:
             """, unsafe_allow_html=True)
             
         st.markdown("<br>", unsafe_allow_html=True)
-        
+
         # ----------------------------------------------------
         # Score Breakdown & Detailed Findings (Matching Image 1)
         # ----------------------------------------------------
@@ -630,5 +763,3 @@ if uploaded_file is not None:
                     type="primary",
                     use_container_width=True
                 )
-else:
-    st.info("👆 Please upload a clear front-facing portrait photo to start the facial beauty analysis.")
